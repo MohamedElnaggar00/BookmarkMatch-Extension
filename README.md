@@ -25,10 +25,10 @@ It works immediately out-of-the-box using an advanced, Boolean-based local searc
 ## ⌨️ Advanced Local Search Syntax
 If you are using BookmarkMatch *without* an API key, the local engine acts like a strict developer tool (inspired by the "Everything" search engine). You can use operators directly in your Google search to precisely filter your bookmarks:
 
-* **`Space` (AND):** `windows debloat` (Matches if it contains *both* "windows" and "debloat").
-* **`" "` (Exact Phrase):** `"windows 11"` (Matches only if the words appear in that exact order).
-* **`!` (NOT):** `github !linux` (Matches "github", but strictly *excludes* any bookmark containing "linux").
-* **`|` (OR):** `windows debloat|privacy` (Matches "windows", and must contain *either* "debloat" or "privacy").
+* **`Space` (AND):** Matches bookmarks that contain *both* keywords anywhere in the title or URL.
+* **`" "` (Exact Phrase):** Matches bookmarks only if the words appear in that exact, specific order.
+* **`!` (NOT):** Strictly *excludes* any bookmarks containing the word immediately following the exclamation mark.
+* **`|` (OR):** Matches bookmarks that contain *either* the word before or the word after the pipe symbol.
 
 *Note: Once filtered, the engine scores the surviving bookmarks based on title relevance and keyword weight to ensure the absolute best matches float to the top.*
 
@@ -52,4 +52,10 @@ Since this extension is not on the Chrome Web Store yet, you can install it manu
 * HTML / CSS / JavaScript
 * Chrome Extensions API (Manifest V3 / Storage / Bookmarks)
 * Advanced Boolean Search Algorithm
-* Google Gemini API (gemini-3.6-flash)
+* Google Gemini API
+
+---
+
+<div align="center">
+  <i>✨ Brought to you by <b>vibe coding</b> and <b>Gemini 3.1 Pro</b> ✨</i>
+</div>
