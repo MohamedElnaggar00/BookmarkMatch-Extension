@@ -1,7 +1,6 @@
 function flattenBookmarks(bookmarkNodes, result = []) {
   for (const node of bookmarkNodes) {
     if (node.url) {
-      // Increased substring to 150 to catch longer titles like your GitHub example
       result.push({ title: (node.title || "").substring(0, 150), url: node.url });
     }
     if (node.children) flattenBookmarks(node.children, result);
@@ -25,37 +24,72 @@ async function findSmartBookmarks(userQuery) {
     const bookmarkTree = await chrome.bookmarks.getTree();
     let allBookmarks = flattenBookmarks(bookmarkTree);
 
-    // --- NEW: FUZZY SCORING SEARCH ENGINE ---
+    // ==========================================
+    // 🔍 "EVERYTHING" STYLE BOOLEAN ENGINE
+    // ==========================================
     if (!apiKey || apiKey.trim() === '') {
-      const queryWords = userQuery.toLowerCase().split(' ').filter(word => word.length > 0);
+      let rawQuery = userQuery.toLowerCase().trim();
       
-      // Grade every single bookmark
-      let scoredBookmarks = allBookmarks.map(b => {
+      // 1. PARSE "EVERYTHING" SYNTAX
+      const exactPhrases = [];
+      // Extract phrases inside quotes "like this" and remove them from the raw query
+      rawQuery = rawQuery.replace(/"([^"]+)"/g, (match, phrase) => {
+        exactPhrases.push(phrase.trim());
+        return ''; 
+      });
+
+      // Split the rest by spaces to get our operators
+      const tokens = rawQuery.split(/\s+/).filter(w => w.length > 0);
+
+      // 2. FILTERING STAGE (Strict Boolean Logic)
+      let filteredBookmarks = allBookmarks.filter(b => {
+        const textToSearch = ((b.title || "") + " " + (b.url || "")).toLowerCase();
+
+        // Check EXACT phrases (" ")
+        for (let phrase of exactPhrases) {
+          if (!textToSearch.includes(phrase)) return false; 
+        }
+
+        // Check AND, OR (|), NOT (!) operators
+        for (let token of tokens) {
+          // NOT operator (!)
+          if (token.startsWith('!')) {
+            const excludeTerm = token.substring(1);
+            if (excludeTerm && textToSearch.includes(excludeTerm)) return false; 
+          } 
+          // OR operator (|)
+          else if (token.includes('|')) {
+            const orTerms = token.split('|').filter(t => t.length > 0);
+            const hasAtLeastOne = orTerms.some(t => textToSearch.includes(t));
+            if (!hasAtLeastOne) return false;
+          } 
+          // Default AND (must include)
+          else {
+            if (!textToSearch.includes(token)) return false;
+          }
+        }
+        
+        return true; // If it survived all checks, keep it!
+      });
+
+      // 3. SCORING STAGE (Rank the survivors)
+      let scoredBookmarks = filteredBookmarks.map(b => {
         const title = (b.title || "").toLowerCase();
-        const url = (b.url || "").toLowerCase();
         let score = 0;
 
-        queryWords.forEach(word => {
-          // 1. Exact match gets highest points
-          if (title.includes(word) || url.includes(word)) {
-            score += 5;
-          } 
-          // 2. Catch typos and plurals (e.g., "windowis" -> "window")
-          else if (word.length >= 5) {
-            // Cut off the last 2 letters of the search word and try again
-            const rootWord = word.substring(0, word.length - 2);
-            if (title.includes(rootWord) || url.includes(rootWord)) {
-              score += 2;
-            }
-          }
+        // Give points based on title matches so the cleanest title rises to the top
+        exactPhrases.forEach(phrase => { if (title.includes(phrase)) score += 50; });
+        tokens.forEach(token => {
+           // Strip operators just for scoring purposes
+           let cleanToken = token.replace('!', '').replace('|', '');
+           if (cleanToken && title.includes(cleanToken)) score += (cleanToken.length * 3);
         });
 
         return { bookmark: b, score: score };
       });
 
-      // Filter out bookmarks with 0 points, and sort by the highest score
+      // Sort and slice to top results
       const basicResults = scoredBookmarks
-        .filter(item => item.score > 0)
         .sort((a, b) => b.score - a.score)
         .map(item => item.bookmark)
         .slice(0, maxMatches);
@@ -63,7 +97,9 @@ async function findSmartBookmarks(userQuery) {
       return { bookmarks: basicResults, usedAI: false };
     }
 
-    // --- NORMAL AI SEARCH ---
+    // ==========================================
+    // 🧠 AI SEMANTIC SEARCH ENGINE (WITH API KEY)
+    // ==========================================
     if (allBookmarks.length > 1000) allBookmarks = allBookmarks.slice(0, 1000);
 
     const prompt = `
