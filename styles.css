@@ -1,0 +1,52 @@
+.my-bookmark-extension-container {
+  background-color: #f8f9fa; /* Light mode bg */
+  border: 1px solid #dadce0; /* Light mode border */
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 20px;
+  font-family: arial, sans-serif;
+}
+
+.my-bookmark-extension-container h2 {
+  font-size: 16px;
+  color: #202124; /* Light mode text */
+  margin-top: 0;
+  margin-bottom: 12px;
+  font-weight: normal;
+}
+
+.my-bookmark-extension-container ul { margin: 0; padding-left: 20px; }
+.my-bookmark-extension-container li { margin-bottom: 8px; }
+
+.my-bookmark-extension-container a {
+  color: #1a0dab; /* Light mode link */
+  text-decoration: none;
+  font-size: 14px;
+}
+.my-bookmark-extension-container a:hover { text-decoration: underline; }
+
+/* Pulse animation for loading text */
+.loading-text {
+  animation: pulse 1.5s infinite;
+}
+@keyframes pulse {
+  0% { opacity: 0.5; }
+  50% { opacity: 1; }
+  100% { opacity: 0.5; }
+}
+
+/* --- DARK MODE SUPPORT --- */
+@media (prefers-color-scheme: dark) {
+  .my-bookmark-extension-container {
+    background-color: #303134; /* Google Dark mode bg */
+    border-color: #3c4043;     /* Google Dark mode border */
+  }
+
+  .my-bookmark-extension-container h2 {
+    color: #e8eaed; /* Google Dark mode text */
+  }
+
+  .my-bookmark-extension-container a {
+    color: #8ab4f8; /* Google Dark mode link */
+  }
+}

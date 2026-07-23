@@ -1,0 +1,45 @@
+{
+  "manifest_version": 3,
+  "name": "BookmarkMatch",
+  "version": "3.2",
+  "description": "An easy way to find relevant bookmarks on search engines. Powered with AI.",
+  // ---- NEW PART STARTS HERE ----
+  "icons": {
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  },
+  // ---- NEW PART ENDS HERE ----
+  "permissions": [
+    "bookmarks",
+    "storage"
+  ],
+  "host_permissions": [
+    "https://generativelanguage.googleapis.com/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    // We also add the main icon here for the toolbar button itself
+    "default_icon": {
+      "16": "icon16.png",
+      "48": "icon48.png",
+      "128": "icon128.png"
+    }
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.google.com/search?*",
+        "*://*.google.com.eg/search?*",
+        "*://*.google.co.uk/search?*",
+        "*://*.google.com.au/search?*",
+        "*://*.google.co.in/search?*"
+      ],
+      "js": ["content.js"],
+      "css": ["styles.css"]
+    }
+  ]
+}

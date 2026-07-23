@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <!-- This line fixes the broken emojis! -->
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <h2>✨ BookmarkMatch</h2>
+  <div style="font-size: 12px; color: #5f6368; margin-top: -10px; margin-bottom: 15px;">Powered with AI</div>
+  
+  <div class="setting-row">
+  <!-- ... (keep the rest of your popup.html exactly the same) -->
+    <label for="toggle-status">Enable Extension</label>
+    <label class="switch">
+      <input type="checkbox" id="toggle-status">
+      <span class="slider round"></span>
+    </label>
+  </div>
+
+  <div class="setting-row vertical">
+    <label for="api-key">Gemini API Key</label>
+    <input type="password" id="api-key" placeholder="Paste your API key here...">
+  </div>
+
+  <div class="setting-row vertical">
+    <label for="max-matches">Number of matches to show</label>
+    <input type="number" id="max-matches" min="1" max="10" value="5">
+  </div>
+
+  <button id="save-btn">Save Settings</button>
+  <div id="status-msg"></div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
