@@ -7,8 +7,11 @@
 
 <br>
 
-
 BookmarkMatch is a smart Chrome Extension that acts as a second brain for your saved links. Whenever you search for a topic on Google, this extension uses Google's Gemini AI to semantically search your saved Chrome bookmarks and displays relevant matches right at the top of your search results.
+
+<div align="center">
+  <img src="screenshot.png" alt="BookmarkMatch in action on Google Search" width="700">
+</div>
 
 ## 🚀 Features
 * **AI-Powered Semantic Search:** Doesn't just match exact words; understands the *intent* of your search.
