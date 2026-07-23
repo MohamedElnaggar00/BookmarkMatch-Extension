@@ -1,7 +1,8 @@
 function flattenBookmarks(bookmarkNodes, result = []) {
   for (const node of bookmarkNodes) {
     if (node.url) {
-      result.push({ title: (node.title || "").substring(0, 80), url: node.url });
+      // Increased substring to 150 to catch longer titles like your GitHub example
+      result.push({ title: (node.title || "").substring(0, 150), url: node.url });
     }
     if (node.children) flattenBookmarks(node.children, result);
   }
@@ -17,21 +18,54 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 async function findSmartBookmarks(userQuery) {
   try {
-    // 1. Get user settings from Chrome Storage
     const settings = await chrome.storage.local.get(['apiKey', 'maxMatches']);
     const apiKey = settings.apiKey;
     const maxMatches = settings.maxMatches || 5;
 
-    // 2. Stop if the user hasn't entered their key in the popup yet
-    if (!apiKey) {
-      return { error: "Please click the extension icon in the top right to paste your Gemini API Key." };
-    }
-
     const bookmarkTree = await chrome.bookmarks.getTree();
     let allBookmarks = flattenBookmarks(bookmarkTree);
+
+    // --- NEW: FUZZY SCORING SEARCH ENGINE ---
+    if (!apiKey || apiKey.trim() === '') {
+      const queryWords = userQuery.toLowerCase().split(' ').filter(word => word.length > 0);
+      
+      // Grade every single bookmark
+      let scoredBookmarks = allBookmarks.map(b => {
+        const title = (b.title || "").toLowerCase();
+        const url = (b.url || "").toLowerCase();
+        let score = 0;
+
+        queryWords.forEach(word => {
+          // 1. Exact match gets highest points
+          if (title.includes(word) || url.includes(word)) {
+            score += 5;
+          } 
+          // 2. Catch typos and plurals (e.g., "windowis" -> "window")
+          else if (word.length >= 5) {
+            // Cut off the last 2 letters of the search word and try again
+            const rootWord = word.substring(0, word.length - 2);
+            if (title.includes(rootWord) || url.includes(rootWord)) {
+              score += 2;
+            }
+          }
+        });
+
+        return { bookmark: b, score: score };
+      });
+
+      // Filter out bookmarks with 0 points, and sort by the highest score
+      const basicResults = scoredBookmarks
+        .filter(item => item.score > 0)
+        .sort((a, b) => b.score - a.score)
+        .map(item => item.bookmark)
+        .slice(0, maxMatches);
+      
+      return { bookmarks: basicResults, usedAI: false };
+    }
+
+    // --- NORMAL AI SEARCH ---
     if (allBookmarks.length > 1000) allBookmarks = allBookmarks.slice(0, 1000);
 
-    // 3. Inject the user's custom Max Matches into the AI prompt
     const prompt = `
       Find the top ${maxMatches} most relevant bookmarks for a user who searched Google for: "${userQuery}".
       Return ONLY a JSON array containing objects with "title" and "url" properties. Do not use markdown.
@@ -59,7 +93,7 @@ async function findSmartBookmarks(userQuery) {
     }
 
     const jsonString = data.candidates[0].content.parts[0].text;
-    return { bookmarks: JSON.parse(jsonString) };
+    return { bookmarks: JSON.parse(jsonString), usedAI: true };
 
   } catch (error) {
     return { error: `CODE CRASH: ${error.message}` }; 
