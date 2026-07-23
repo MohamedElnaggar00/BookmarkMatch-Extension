@@ -1,3 +1,13 @@
+<div align="center">
+  <img src="icon128.png" alt="BookmarkMatch Logo" width="120">
+  
+  # ✨ BookmarkMatch (Powered with AI)
+  **An easy way to find relevant bookmarks on search engines.**
+</div>
+
+<br>
+
+BookmarkMatch is a smart Chrome Extension that acts as a second brain for your saved links...
 # ✨ BookmarkMatch (Powered with AI)
 
 BookmarkMatch is a smart Chrome Extension that acts as a second brain for your saved links. Whenever you search for a topic on Google, this extension uses Google's Gemini AI to semantically search your saved Chrome bookmarks and displays relevant matches right at the top of your search results.
